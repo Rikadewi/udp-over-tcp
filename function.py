@@ -80,7 +80,8 @@ def calculateChecksum(tipe, identifier, sequence, length, data):
     jumlahTambahNol =  16-(len(packetWOChecksum))
     
     for x in range(jumlahTambahNol):
-        packetWOChecksum = str(packetWOChecksum) + str(0)
+        # print(type(packetWOChecksum) + " = tipe paketWOceksam")
+        packetWOChecksum = packetWOChecksum + str(0)
 
     # print(packetWOChecksum)
     calculateCheck = calculateCheck ^ int(packetWOChecksum,2)
@@ -140,64 +141,17 @@ def getInt(biner):
 def addTag(binary):
     return '0b' + binary
 
+#Menuliskan file dari type data byte
 def writeFile(binary,filename):
     integer = int(binary,2)
     byte = integer.to_bytes((integer.bit_length()+7)//8, byteorder=sys.byteorder, signed = False)
-    text = byte.decode("utf-8")
 
-    f = open(filename, "wb")
-    f.write(bytearray(text,'utf-8'))
+    f = open(filename, "wb+")
+    f.write(byte)
     f.close()
-# def bitstring_to_bytes(s):
-#     return int(s, 2).to_bytes(-(-len(s) // 8), byteorder='big')
-
-def bitstring_to_bytes(s):
-    v = int(s, 2)
-    b = bytearray()
-    while v:
-        b.append(v & 0xff)
-        v >>= 8
-    return bytes(b[::-1])
-
-# s = "0110100001101001"
-# print(bitstring_to_bytes(s))
 
 
-
-# f = open("output3.txt","w")
-# f.write("Halo")
-# f.close()
-# writeFile("1000","ab")
-# print()
-# print("COMPARE")
-# print()
-
-# newB = addTag(c)
-
-# # byteArray= bytes([int(i) for i in c])
-# text = bitstring_to_bytes(c)
-# print(text)
-
-
-# print(newB)
-
-# hexa="0x%x" % int(newB,2)
-# print(hexa)
-
-# newA = int(c,2)
-# # print(newA)
-# integer=newA.to_bytes(16, byteorder=sys.byteorder,signed = True)
-# print(integer)
-# print(integer.decode('utf-8'))
-# list=createListPacket(file)
-# for packet in list:
-#     print(packet)
-#     print()
-
-# binary_data = b'I am text.'
-
-
-
-
-
+f = openFile(input())
+data_biner = removeTag(toBiner(f))
+writeFile(data_biner,"output.pdf")
    
