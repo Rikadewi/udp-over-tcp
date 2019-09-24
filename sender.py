@@ -16,7 +16,7 @@ listPacket = function.createListPacket(filename)
 
 try:
     senderSock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    print("OPEN SOCKET")
+    print("Socket sender opened")
 except (socket.error):    
     print('Failed to create socket. Error Code : ' + socket.error)
     sys.exit()
@@ -30,10 +30,12 @@ isSuccess = threading.Condition()
 def sendPacket(packet, i):
     try :
         isTimeOut = False
-        isGetReply = False
 
+        print("tes")
         def waitForReply():
             reply = ''
+            print("wait reply")
+            isGetReply = False
             while not isTimeOut and not isGetReply:
                 reply, addr = senderSock.recvfrom(1024)
                 if len(reply) != 0:
@@ -49,14 +51,19 @@ def sendPacket(packet, i):
                     sendPacket(packet)
 
         def waitFiveSeconds():
+            print("sleep")
             time.sleep(.500)
             isTimeOut = True        
                     
         senderSock.sendto(packet.encode('utf-8'), (host, port))
+        print("open thread")
+        waitReplyThread = threading.Thread(target = waitForReply, args = ())
+        sleepThread = threading.Thread(target = waitFiveSeconds, args = ())
 
-        threading.Thread(target = waitForReply, args = ())
-        threading.Thread(target = waitFiveSeconds, args = ())
-        
+        waitReplyThread.start()
+        sleepThread.start()
+
+        print("selesai thread")
     except socket.error:
         print("Failed to send message, Error :" + socket.error)
         sys.exit()
@@ -64,13 +71,12 @@ def sendPacket(packet, i):
 while True:
     while(i<totalPacket):
         isSuccess.acquire()
-        print("Sending packet ke-" + str(i))
+        print("Sending packet ke-" + str(i+1))
         packet = listPacket[i]
         sendPacket(packet, i+1)
         isSuccess.wait()
         i+=1
         isSuccess.release()
-
 
 # Fungsi untuk mengecek paket reply
 # Memeberikan True jika hasil ceksum untuk reply benar, dan setiap tipe, id, dan sequence memberikan nilai yang benar

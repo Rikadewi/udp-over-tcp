@@ -62,6 +62,7 @@ def processPacket(packetReceived, addr):
 
 while True:    
     packetReceived, addr = receiverSock.recvfrom(1024)
-    threading.Thread(target = processPacket, args = (packetReceived, addr))
+    sendPacketThread = threading.Thread(target = processPacket, args = (packetReceived, addr))
+    sendPacketThread.start()
     
 receiverSock.close()

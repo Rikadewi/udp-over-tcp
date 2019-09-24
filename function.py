@@ -78,7 +78,8 @@ def calculateChecksum(tipe, identifier, sequence, length, data):
     jumlahTambahNol =  16-(len(packetWOChecksum))
     
     for x in range(jumlahTambahNol):
-        packetWOChecksum += '0'
+        print(type(packetWOChecksum) + " = tipe paketWOceksam")
+        packetWOChecksum = str(packetWOChecksum) + str(0)
 
     calculateCheck = calculateCheck ^ int(packetWOChecksum,2)
 
@@ -131,13 +132,12 @@ def addTag(binary):
 
 def writeFile(binary,filename):
     integer = int(binary,2)
-    byte = integer.to_bytes(len(binary), byteorder=sys.byteorder, signed = False)
-    text = byte.decode('utf-8')
-    print(text)
-    f = open(filename, "w")
-    f.write(text)
-    f.close()
+    byte = integer.to_bytes((integer.bit_length()+7)//8, byteorder=sys.byteorder, signed = False)
+    text = byte.decode("utf-8")
 
+    f = open(filename, "wb")
+    f.write(bytearray(text,'utf-8'))
+    f.close()
 # def bitstring_to_bytes(s):
 #     return int(s, 2).to_bytes(-(-len(s) // 8), byteorder='big')
 
