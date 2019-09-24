@@ -9,7 +9,7 @@ import threading
 host = "127.0.0.1"
 
 # Target Port
-port = 6789
+port = 6889
 
 filename = 'test.txt'
 listPacket = function.createListPacket(filename)
@@ -56,6 +56,7 @@ def sendPacket(packet, i):
             isTimeOut = True        
                     
         senderSock.sendto(packet.encode('utf-8'), (host, port))
+        print(packet)
         print("open thread")
         waitReplyThread = threading.Thread(target = waitForReply, args = ())
         sleepThread = threading.Thread(target = waitFiveSeconds, args = ())
@@ -72,6 +73,7 @@ while True:
     while(i<totalPacket):
         isSuccess.acquire()
         print("Sending packet ke-" + str(i+1))
+        # print(listPacket[i])
         packet = listPacket[i]
         sendPacket(packet, i+1)
         isSuccess.wait()

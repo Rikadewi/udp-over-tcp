@@ -4,7 +4,7 @@ import function
 import threading
 
 host = "127.0.0.1"
-port = 6789
+port = 6889
 
 try:
     receiverSock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -29,14 +29,15 @@ file = initialize(16, '')
 fileSequence = initialize(16, 1)
 
 def processPacket(packetReceived, addr):
+    packetReceived = function.removeBpetik(str(packetReceived))
     print ("Message: ", packetReceived)
     if function.validateChecksum(packetReceived):
         valid = True
         tipe, identifier, sequence, length, checksum, data = function.breakPacket(packetReceived) 
-        if fileSequence[identifier] >= sequence:
-            if tipe == function.DATA:
+        if fileSequence[int(identifier,2)] >= int(sequence,2):
+            if int(tipe,2) == int(function.DATA,16):
                 replyType = function.ACK
-            elif tipe == function.FIN:
+            elif int(tipe,2) == int(function.FIN,16):
                 replyType = function.FIN_ACK
                 print("Whole Data Received")
             else:

@@ -31,7 +31,7 @@ def createListPacket(filename):
         tipe = convertIntToNBit(getInt(DATA),4) 
         sequence = convertIntToNBit(count_seq,16)
         length = convertIntToNBit(len(data),16)
-        checksum = convertIntToNBit(calculateChecksum(tipe, identifier, sequence, length, data),16)
+        checksum = calculateChecksum(tipe, identifier, sequence, length, data)
         packet = createPacket(tipe,identifier,sequence,length,checksum,data)
         count_seq+=1
         listPacket.append(packet)
@@ -39,7 +39,7 @@ def createListPacket(filename):
     tipe = convertIntToNBit(getInt(FIN),4) 
     sequence = convertIntToNBit(count_seq,16)
     length = convertIntToNBit(len(data_biner),16)
-    checksum = convertIntToNBit(calculateChecksum(tipe, identifier, sequence, length, data_biner),16)
+    checksum = (calculateChecksum(tipe, identifier, sequence, length, data_biner))
     packet = createPacket(tipe,identifier,sequence,length,checksum,data_biner) 
     listPacket.append(packet)
 
@@ -60,30 +60,33 @@ def breakPacket(packet):
     return tipe, identifier, sequence, length, checksum, data
 
 # calculateChecksum return checksum of given parameter
-# return integer desimal
+# return string biner
 def calculateChecksum(tipe, identifier, sequence, length, data):
     packetWOChecksum = tipe + identifier + sequence + length + data    #paket without checksum
 
     # inisiasi
     piecePacket = packetWOChecksum[0:16]           #Mengambil 16 bits pertama
     packetWOChecksum = packetWOChecksum[16:]      
-    calculateCheck = int(piecePacket,2)             
+    calculateCheck = int(piecePacket,2)
+    print(piecePacket)             
     
     while(len(packetWOChecksum)>16):
         satuanPiecePacket = packetWOChecksum[0:16]
         packetWOChecksum = packetWOChecksum[16:]
         calculateCheck = calculateCheck ^ int(satuanPiecePacket,2)
+        print(satuanPiecePacket)
 
     #Bit paket tidak kelipatan 16
     jumlahTambahNol =  16-(len(packetWOChecksum))
     
     for x in range(jumlahTambahNol):
-        print(type(packetWOChecksum) + " = tipe paketWOceksam")
         packetWOChecksum = str(packetWOChecksum) + str(0)
 
+    # print(packetWOChecksum)
     calculateCheck = calculateCheck ^ int(packetWOChecksum,2)
+    # print("calculate check" + str(calculateCheck))
 
-    return calculateCheck
+    return convertIntToNBit(calculateCheck,16)
 
 # validateChecksum return true or false based on checksum
 def validateChecksum(packet):
@@ -91,7 +94,11 @@ def validateChecksum(packet):
     tipe, identifier, sequence, length, checksum, data = breakPacket(packet)
     calculateCheck = calculateChecksum(tipe, identifier, sequence, length, data)
 
-    if (calculateCheck == int(checksum,2)):
+    # print("calculate checksum = " + calculateCheck)
+    # print("validate checksum = " + checksum)
+
+
+    if (calculateCheck == (checksum)):
         return True
     else:
         return False
@@ -116,7 +123,10 @@ def toBiner(dataFile):
 
 #Remove 0b from biner
 def removeTag(biner):
-    return biner[2:len(biner)]
+    return biner[2:]
+
+def removeBpetik(paketACK):
+    return paketACK[2:(len(paketACK)-1)]
 
 #Generate Random ID
 def randomId():
