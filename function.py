@@ -68,13 +68,13 @@ def calculateChecksum(tipe, identifier, sequence, length, data):
     piecePacket = packetWOChecksum[0:16]           #Mengambil 16 bits pertama
     packetWOChecksum = packetWOChecksum[16:]      
     calculateCheck = int(piecePacket,2)
-    print(piecePacket)             
+    # print(piecePacket)             
     
     while(len(packetWOChecksum)>16):
         satuanPiecePacket = packetWOChecksum[0:16]
         packetWOChecksum = packetWOChecksum[16:]
         calculateCheck = calculateCheck ^ int(satuanPiecePacket,2)
-        print(satuanPiecePacket)
+        # print(satuanPiecePacket)
 
     #Bit paket tidak kelipatan 16
     jumlahTambahNol =  16-(len(packetWOChecksum))
@@ -151,7 +151,7 @@ def writeFile(binary,filename):
     f.close()
 
 
-f = openFile(input())
-data_biner = removeTag(toBiner(f))
-writeFile(data_biner,"output.pdf")
+# f = openFile(input())
+# data_biner = removeTag(toBiner(f))
+# writeFile(data_biner,"output.pdf")
    
