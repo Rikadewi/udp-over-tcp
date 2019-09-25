@@ -71,6 +71,7 @@ def sendFile(host, listenPort, filename, senderSock, receiverSock):
     
         
 if __name__ == "__main__":
+    myhost = "127.0.0.1"
     host = input("Masukkan address(host) : ")
 
     try:
@@ -88,8 +89,8 @@ if __name__ == "__main__":
         sys.exit()
     try:
         receiverSock.setblocking(False)
-        receiverSock.bind((host, function.LISTEN_PORT))
-        print('Socket bind to address ' + str(host) + ':' + str(function.LISTEN_PORT))
+        receiverSock.bind((myhost, function.LISTEN_PORT))
+        print('Socket bind to address ' + str(myhost) + ':' + str(function.LISTEN_PORT))
     except (socket.error):
         print ('Bind failed. Error Code : ' + str(socket.error))
         sys.exit()
