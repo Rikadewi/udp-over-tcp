@@ -3,8 +3,6 @@ import sys
 import function
 import threading
 
-listen_port = 4568
-
 def processPacket(packetReceived, addr, senderSock):
     if function.validateChecksum(packetReceived):
         valid = True
@@ -23,7 +21,7 @@ def processPacket(packetReceived, addr, senderSock):
                 file[int.from_bytes(identifier, byteorder='big')]+=data
                 fileSequence[int.from_bytes(identifier, byteorder='big')]+=1
                 if replyType == function.FIN_ACK:
-                    # print('write  to file')
+                    print("Writing File...", "output-" + str(int.from_bytes(identifier, byteorder='big')))
                     function.writeFile(file[int.from_bytes(identifier, byteorder='big')], "output-" + str(int.from_bytes(identifier, byteorder='big')))
         else: # fileSequence[identifier] < sequence
             valid = False
@@ -31,16 +29,21 @@ def processPacket(packetReceived, addr, senderSock):
         if valid:
             replyChecksum = function.calculateChecksum(replyType, identifier, sequence, function.convertIntToNByte(0, 2), bytes(0))
             replyPacket = function.createPacket(replyType, identifier, sequence, function.convertIntToNByte(0, 2), replyChecksum, bytes(0))
-            senderSock.sendto(replyPacket, (addr, listen_port))
+            senderSock.sendto(replyPacket, (addr, function.LISTEN_PORT))
     else:
         print("Packet checksum is not valid")
 
 if __name__ == "__main__":
     host = "127.0.0.1"
-    senderPort = 1234
-
+    try:
+        listenPort = int(input("Input port : "))
+    except:
+        print("Invalid port")
+        sys.exit()
+    
     file = function.initialize(16, bytes(0))
     fileSequence = function.initialize(16, 1)
+    
     try:
         receiverSock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         senderSock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -50,23 +53,14 @@ if __name__ == "__main__":
         sys.exit()
 
     try:
-        receiverSock.bind((host, function.LISTEN_PORT))
-        print('Socket bind to address ' + str(host) + ':' + str(function.LISTEN_PORT))
+        receiverSock.bind((host, listenPort))
+        print('Socket bind to address ' + str(host) + ':' + str(listenPort))
     except (socket.error):
     	print ('Bind failed. Error Code : ' + str(socket.error))
 
     while True:    
         packetReceived, (addr, port) = receiverSock.recvfrom(function.MAX_SENT)
-        # print("cek valid:")
-        # print
-        # print(function.validateChecksum(packetReceived))
-        # processPacket(packetReceived, addr, senderSock)
         sendPacketThread = threading.Thread(target = processPacket, args = (packetReceived, addr, senderSock))
         sendPacketThread.start()
     receiverSock.close()
     senderSock.close()
-
-# if __name__ == "__main__":
-#     while True:
-#         try:
-#             receiveFileThread = threading.Thread(target=)

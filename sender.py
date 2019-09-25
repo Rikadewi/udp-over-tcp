@@ -4,8 +4,6 @@ import function
 import time
 import threading
 
-listen_port = 4568
-
 # Fungsi untuk mengecek paket reply
 # Memeberikan True jika hasil ceksum untuk reply benar, dan setiap tipe, id, dan sequence memberikan nilai yang benar
 def cekPacket(totalPacket, packet, reply):
@@ -35,7 +33,7 @@ def cekPacket(totalPacket, packet, reply):
         return False
 
 # send a file to host
-def sendFile(host, filename, senderSock, receiverSock):
+def sendFile(host, listenPort, filename, senderSock, receiverSock):
     try:    
         listPacket = function.createListPacket(filename)
     except IOError:
@@ -49,7 +47,7 @@ def sendFile(host, filename, senderSock, receiverSock):
         packet = listPacket[i]
         start = time.time()
         try:
-            senderSock.sendto(packet, (host, function.LISTEN_PORT))
+            senderSock.sendto(packet, (host, listenPort))
         except socket.error:
             print("Error in sending packet")
         
@@ -73,7 +71,14 @@ def sendFile(host, filename, senderSock, receiverSock):
     
         
 if __name__ == "__main__":
-    host = "127.0.0.1"
+    host = input("Masukkan address(host) : ")
+
+    try:
+        listenPort = int(input("Massukan address(port) : "))
+    except:
+        print("Invalid port")
+        sys.exit()
+
     try:
         senderSock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         receiverSock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -83,8 +88,8 @@ if __name__ == "__main__":
         sys.exit()
     try:
         receiverSock.setblocking(False)
-        receiverSock.bind((host, listen_port))
-        print('Socket bind to address ' + str(host) + ':' + str(listen_port))
+        receiverSock.bind((host, function.LISTEN_PORT))
+        print('Socket bind to address ' + str(host) + ':' + str(function.LISTEN_PORT))
     except (socket.error):
         print ('Bind failed. Error Code : ' + str(socket.error))
         sys.exit()
@@ -92,7 +97,7 @@ if __name__ == "__main__":
     while True:
         filename = input("Input filename : ")
         try:
-            sendFileThread = threading.Thread(target=sendFile, args=(host, filename, senderSock, receiverSock))
+            sendFileThread = threading.Thread(target=sendFile, args=(host, listenPort, filename, senderSock, receiverSock))
         except:
             print ("Unable to start new thread")
         sendFileThread.start()
