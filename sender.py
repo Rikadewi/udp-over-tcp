@@ -71,7 +71,7 @@ def sendFile(host, listenPort, filename, senderSock, receiverSock):
     
         
 if __name__ == "__main__":
-    myhost = "127.0.0.1"
+    myhost = "0.0.0.0"
     host = input("Masukkan address(host) : ")
 
     try:

@@ -34,7 +34,7 @@ def processPacket(packetReceived, addr, senderSock):
         print("Packet checksum is not valid")
 
 if __name__ == "__main__":
-    host = "127.0.0.1"
+    host = "0.0.0.0"
     try:
         listenPort = int(input("Input port : "))
     except:
