@@ -1,93 +1,98 @@
 import sys
 import random
 
-# Kamus value type in binary
-DATA = bin(0x0)[2:]
-ACK = bin(0x1)[2:]
-FIN = bin(0x2)[2:]
-FIN_ACK = bin(0x3)[2:]
-MAX_DATA = ((0x1)<<15)*8 #dalam bit
+# Kamus value type in byte
+DATA = b'\x00'
+ACK = b'\x01'
+FIN = b'\x02'
+FIN_ACK = b'\x03'
+
+MAX_DATA = 32768 #dalam byte
+LISTEN_PORT = 6789
+MAX_SENT = 33000
+
 
 # packet = '0101010101001010101011010010101011010101010101010101010101010101010101010010101010101010101010'
 
 def createListPacket(filename):
 
-    data_raw = openFile(filename)
-    data_biner = removeTag(toBiner(data_raw))
-    
-    tipe =''
+    data_byte = openFile(filename)
     identifier = randomId() 
-    sequence = ''
-    length = ''
-    checksum = ''
-    data = ''
-
     listPacket = []
-    
     count_seq= 1
-    while(len(data_biner)>MAX_DATA):
-        data = data_biner[0:MAX_DATA]
-        data_biner = data_biner[MAX_DATA:]
-        tipe = convertIntToNBit(getInt(DATA),4) 
-        sequence = convertIntToNBit(count_seq,16)
-        length = convertIntToNBit(len(data),16)
+
+    while(len(data_byte)>MAX_DATA):
+        data = data_byte[0:MAX_DATA]
+        data_byte = data_byte[MAX_DATA:]
+        tipe =  DATA
+        sequence = count_seq.to_bytes(2,byteorder ="big")
+        length = len(data).to_bytes(2,byteorder="big")
         checksum = calculateChecksum(tipe, identifier, sequence, length, data)
         packet = createPacket(tipe,identifier,sequence,length,checksum,data)
         count_seq+=1
         listPacket.append(packet)
 
-    tipe = convertIntToNBit(getInt(FIN),4) 
-    sequence = convertIntToNBit(count_seq,16)
-    length = convertIntToNBit(len(data_biner),16)
-    checksum = (calculateChecksum(tipe, identifier, sequence, length, data_biner))
-    packet = createPacket(tipe,identifier,sequence,length,checksum,data_biner) 
+    tipe = FIN
+    sequence = count_seq.to_bytes(2,byteorder ="big")
+    length = len(data_byte).to_bytes(2,byteorder="big")
+    checksum = calculateChecksum(tipe, identifier, sequence, length, data_byte)
+    packet = createPacket(tipe,identifier,sequence,length,checksum,data_byte)
     listPacket.append(packet)
-
     return listPacket
+
+
+#Input paket dalam byte array
+def getID(packet):
+    return (packet[0] & 15).to_bytes(1,)
 
 # createPacket membentuk sebuah packet berdasarkan parameter yang disediakan
 def createPacket(tipe, identifier, sequence, length, checksum, data):
-    return tipe + identifier + sequence + length + checksum + data
+    combine = (int.from_bytes(tipe,byteorder="big") << 4 )| (int.from_bytes(identifier,byteorder="big"))
+    tipe_id = combine.to_bytes(1,byteorder="big")
+    
+    return tipe_id + sequence + length + checksum + data
     
 # breakPacket will break a packet to type, id, sequence, length, checksum, and data
-def breakPacket(packet):
-    tipe = packet[0:4]
-    identifier = packet[4:8]
-    sequence = packet[8:24]
-    length = packet[24:40]
-    checksum = packet[40:56]
-    data = packet[56:]
+def breakPacket(packet):        #packet merupakan bytearray
+    tipe = (packet[0] >> 4).to_bytes(1,byteorder='big')
+    identifier = (packet[0] & 15).to_bytes(1,byteorder='big')
+    sequence = packet[1:3]
+    length = packet[3:5]
+    checksum = packet[5:7]
+    data = packet[7:]
     return tipe, identifier, sequence, length, checksum, data
 
 # calculateChecksum return checksum of given parameter
 # return string biner
 def calculateChecksum(tipe, identifier, sequence, length, data):
-    packetWOChecksum = tipe + identifier + sequence + length + data    #paket without checksum
+    packetWOChecksum = ((int.from_bytes(tipe,byteorder='big') << 4) + int.from_bytes(identifier,byteorder='big')).to_bytes(1,byteorder='big') + sequence + length + data    #paket without checksum
+    # print(packetWOChecksum)
 
     # inisiasi
-    piecePacket = packetWOChecksum[0:16]           #Mengambil 16 bits pertama
-    packetWOChecksum = packetWOChecksum[16:]      
-    calculateCheck = int(piecePacket,2)
+    piecePacket = packetWOChecksum[0:2]           #Mengambil 16 bits pertama
+    packetWOChecksum = packetWOChecksum[2:]    
+    calculateCheck = int.from_bytes(piecePacket,byteorder='big')
+    # print(calculateCheck)
     # print(piecePacket)             
     
-    while(len(packetWOChecksum)>16):
-        satuanPiecePacket = packetWOChecksum[0:16]
-        packetWOChecksum = packetWOChecksum[16:]
-        calculateCheck = calculateCheck ^ int(satuanPiecePacket,2)
+    while(len(packetWOChecksum)>2):
+        satuanPiecePacket = packetWOChecksum[0:2]
+        packetWOChecksum = packetWOChecksum[2:]
+        calculateCheck = calculateCheck ^ int.from_bytes(satuanPiecePacket,byteorder='big')
         # print(satuanPiecePacket)
 
-    #Bit paket tidak kelipatan 16
-    jumlahTambahNol =  16-(len(packetWOChecksum))
+    # #Bit paket tidak kelipatan 2
+    # jumlahTambahNol =  2-(len(packetWOChecksum))
     
-    for x in range(jumlahTambahNol):
-        # print(type(packetWOChecksum) + " = tipe paketWOceksam")
-        packetWOChecksum = packetWOChecksum + str(0)
+    # for x in range(jumlahTambahNol):
+    #     # print(type(packetWOChecksum) + " = tipe paketWOceksam")
+    #     packetWOChecksum = packetWOChecksum + str(0)
 
     # print(packetWOChecksum)
-    calculateCheck = calculateCheck ^ int(packetWOChecksum,2)
+    calculateCheck = calculateCheck ^ int.from_bytes(packetWOChecksum,byteorder='big')
     # print("calculate check" + str(calculateCheck))
 
-    return convertIntToNBit(calculateCheck,16)
+    return calculateCheck.to_bytes(2,byteorder='big')
 
 # validateChecksum return true or false based on checksum
 def validateChecksum(packet):
@@ -95,30 +100,25 @@ def validateChecksum(packet):
     tipe, identifier, sequence, length, checksum, data = breakPacket(packet)
     calculateCheck = calculateChecksum(tipe, identifier, sequence, length, data)
 
-    # print("calculate checksum = " + calculateCheck)
-    # print("validate checksum = " + checksum)
-
-
-    if (calculateCheck == (checksum)):
+    if int.from_bytes(calculateCheck,byteorder='big') == int.from_bytes(checksum,byteorder='big'):
         return True
     else:
         return False
     
-# convertIntToNBit menerima input integer dan menghasilkan binary sepanjang N bit
-def convertIntToNBit(integer, n):
-    binary = bin(integer)[2:]
-    while (len(binary) < n):
-        binary = '0' + binary
-    return binary
+# convertIntToNByte menerima input integer dan menghasilkan arraybyte sepanjang N byte
+def convertIntToNByte(integer, n):
+    return integer.to_bytes(n, byteorder='big')
 
-#Membaca file kemudian mengembalikan data dalam format binary
+#Membaca file kemudian mengembalikan data dalam format byteArray
 def openFile(filename): 
-    data = open(filename,"rb").read()
-    return data
+    data = open(filename,"rb")
+    dataByte = data.read()
+    data.close()
+    return dataByte
 
 #Menguban menjadi biner: 0b000011101010....
 def toBiner(dataFile):
-    integer=int.from_bytes(dataFile, byteorder=sys.byteorder)
+    integer=int.from_bytes(dataFile, byteorder='big')
     biner=bin(integer) 
     return biner
 
@@ -129,9 +129,9 @@ def removeTag(biner):
 def removeBpetik(paketACK):
     return paketACK[2:(len(paketACK)-1)]
 
-#Generate Random ID
+#Generate Random ID return bytearray with lenght 1 byte
 def randomId():
-    return convertIntToNBit(random.randint(0, 15), 4)
+    return (random.randint(0, 15)).to_bytes(1, byteorder='big')
 
 #get Integer from biner
 def getInt(biner):
@@ -142,9 +142,9 @@ def addTag(binary):
     return '0b' + binary
 
 #Menuliskan file dari type data byte
-def writeFile(binary,filename):
-    integer = int(binary,2)
-    byte = integer.to_bytes((integer.bit_length()+7)//8, byteorder=sys.byteorder, signed = False)
+def writeFile(byte,filename):
+    # integer = int(binary,2)
+    # byte = integer.to_bytes((integer.bit_length()+7)//8, byteorder='big', signed = False)
 
     f = open(filename, "wb+")
     f.write(byte)
@@ -155,3 +155,8 @@ def writeFile(binary,filename):
 # data_biner = removeTag(toBiner(f))
 # writeFile(data_biner,"output.pdf")
    
+# create an array and initialize with element
+def initialize(size, element):
+    array = [element] * size
+    return array
+
