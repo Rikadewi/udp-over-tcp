@@ -20,15 +20,15 @@ def processPacket(packetReceived, addr, senderSock):
         
                 file[int.from_bytes(identifier, byteorder='big')]+=data
                 fileSequence[int.from_bytes(identifier, byteorder='big')]+=1
-                if replyType == function.FIN_ACK:
-                    print("Writing File...", "output-" + str(int.from_bytes(identifier, byteorder='big')))
-                    function.writeFile(file[int.from_bytes(identifier, byteorder='big')], "output-" + str(int.from_bytes(identifier, byteorder='big')))
-                    fileSequence[int.from_bytes(identifier, byteorder='big')] = 1
-                    file[int.from_bytes(identifier, byteorder='big')] = bytes(0)
+                    # fileSequence[int.from_bytes(identifier, byteorder='big')] = 1
+                    # file[int.from_bytes(identifier, byteorder='big')] = bytes(0)
         else: # fileSequence[identifier] < sequence
             valid = False
 
         if valid:
+            if replyType == function.FIN_ACK:
+                print("Writing File...", "output-" + str(int.from_bytes(identifier, byteorder='big')))
+                function.writeFile(file[int.from_bytes(identifier, byteorder='big')], "output-" + str(int.from_bytes(identifier, byteorder='big')))
             replyChecksum = function.calculateChecksum(replyType, identifier, sequence, function.convertIntToNByte(0, 2), bytes(0))
             replyPacket = function.createPacket(replyType, identifier, sequence, function.convertIntToNByte(0, 2), replyChecksum, bytes(0))
             senderSock.sendto(replyPacket, (addr, function.LISTEN_PORT))
