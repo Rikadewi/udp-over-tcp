@@ -14,16 +14,9 @@ LISTEN_PORT = 6789
 MAX_SENT = 33000
 MAX_PROGRESS = 40
 
-def createListPacket(filename, id):
-    data_byte = openFile(filename)
-    identifier = id.to_bytes(1, byteorder='big')
-
-# packet = '0101010101001010101011010010101011010101010101010101010101010101010101010010101010101010101010'
-
 def createListPacket(filename):
-
     data_byte = openFile(filename)
-    identifier = randomId() 
+    identifier = randomId()
     listPacket = []
     count_seq= 1
 
@@ -50,6 +43,10 @@ def createListPacket(filename):
 #Input paket dalam byte array
 def getID(packet):
     return (packet[0] & 15).to_bytes(1,)
+
+#Generate Random ID return bytearray with lenght 1 byte
+def randomId():
+    return (random.randint(0, 15)).to_bytes(1, byteorder='big')
 
 # createPacket membentuk sebuah packet berdasarkan parameter yang disediakan
 def createPacket(tipe, identifier, sequence, length, checksum, data):
