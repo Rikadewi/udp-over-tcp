@@ -89,8 +89,8 @@ if __name__ == "__main__":
         sys.exit()
     try:
         receiverSock.setblocking(False)
-        receiverSock.bind((myhost, function.LISTEN_PORT))
-        print('Socket bind to address ' + str(myhost) + ':' + str(function.LISTEN_PORT))
+        receiverSock.bind((, function.LISTEN_PORT))
+        print('Socket bind to port :' + str(function.LISTEN_PORT))
     except (socket.error):
         print ('Bind failed. Error Code : ' + str(socket.error))
         sys.exit()

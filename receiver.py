@@ -53,8 +53,8 @@ if __name__ == "__main__":
         sys.exit()
 
     try:
-        receiverSock.bind((host, listenPort))
-        print('Socket bind to address ' + str(host) + ':' + str(listenPort))
+        receiverSock.bind((, listenPort))
+        print('Socket bind to port:' + str(listenPort))
     except (socket.error):
     	print ('Bind failed. Error Code : ' + str(socket.error))
 
