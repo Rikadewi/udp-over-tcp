@@ -1,5 +1,7 @@
 import sys
 import random
+import time
+import math
 
 # Kamus value type in byte
 DATA = b'\x00'
@@ -10,10 +12,11 @@ FIN_ACK = b'\x03'
 MAX_DATA = 32768 
 LISTEN_PORT = 6789
 MAX_SENT = 33000
+MAX_PROGRESS = 40
 
-def createListPacket(filename):
+def createListPacket(filename, id):
     data_byte = openFile(filename)
-    identifier = randomId()
+    identifier = id.to_bytes(1, byteorder='big')
     listPacket = []
     count_seq= 1
 
@@ -99,10 +102,6 @@ def openFile(filename):
     data.close()
     return dataByte
 
-#Generate Random ID return bytearray with lenght 1 byte
-def randomId():
-    return (random.randint(0, 15)).to_bytes(1, byteorder='big')
-
 #Menuliskan file dari type data byte
 def writeFile(byte,filename):
     f = open(filename, "wb+")
@@ -114,3 +113,14 @@ def initialize(size, element):
     array = [element] * size
     return array
 
+# create progress bar
+# def printProgressBar(i, totalPacket):
+#     index = i + 1
+#     progressPercentage = math.floor((index/totalPacket)*MAX_PROGRESS)
+#     progress = '#'*progressPercentage
+#     space = ' '*(MAX_PROGRESS - progressPercentage)
+#     if index == totalPacket:
+#         endChar = '\n'
+#     else:
+#         endChar = '\r'
+#     print('Progress: [' + progress + space + '] Input Filename', end=endChar)

@@ -33,9 +33,9 @@ def cekPacket(totalPacket, packet, reply):
         return False
 
 # send a file to host
-def sendFile(host, listenPort, filename, senderSock, receiverSock):
+def sendFile(host, listenPort, filename, senderSock, receiverSock, id):
     try:    
-        listPacket = function.createListPacket(filename)
+        listPacket = function.createListPacket(filename, id)
     except IOError:
         print("File not found")
         return
@@ -97,11 +97,13 @@ if __name__ == "__main__":
 
     while True:
         filename = input("Input filename : ")
+        id = 0
         try:
-            sendFileThread = threading.Thread(target=sendFile, args=(host, listenPort, filename, senderSock, receiverSock))
+            sendFileThread = threading.Thread(target=sendFile, args=(host, listenPort, filename, senderSock, receiverSock, id))
         except:
             print ("Unable to start new thread")
         sendFileThread.start()
+        id+=1
         
     receiverSock.close()
     senderSock.close()
