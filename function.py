@@ -14,11 +14,9 @@ LISTEN_PORT = 6789
 MAX_SENT = 33000
 MAX_PROGRESS = 40
 
-<<<<<<< HEAD
 def createListPacket(filename, id):
     data_byte = openFile(filename)
     identifier = id.to_bytes(1, byteorder='big')
-=======
 
 # packet = '0101010101001010101011010010101011010101010101010101010101010101010101010010101010101010101010'
 
@@ -26,7 +24,6 @@ def createListPacket(filename):
 
     data_byte = openFile(filename)
     identifier = randomId() 
->>>>>>> parent of 780ee04... Remove unused comment
     listPacket = []
     count_seq= 1
 
@@ -125,8 +122,6 @@ def openFile(filename):
     data.close()
     return dataByte
 
-<<<<<<< HEAD
-=======
 #Menguban menjadi biner: 0b000011101010....
 def toBiner(dataFile):
     integer=int.from_bytes(dataFile, byteorder='big')
@@ -152,7 +147,6 @@ def getInt(biner):
 def addTag(binary):
     return '0b' + binary
 
->>>>>>> parent of 780ee04... Remove unused comment
 #Menuliskan file dari type data byte
 def writeFile(byte,filename):
     # integer = int(binary,2)
